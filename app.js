@@ -4,6 +4,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');
+let config = require('./config');
+let authenticate = require('./authenticate');
+let passport = require('passport')
+const bodyParser = require('body-parser');
+
 
 
 // Routers
@@ -22,8 +27,11 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -31,9 +39,12 @@ app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
 
+
+
 // Db Connection
-const url = 'mongodb://localhost:27017/conFusion';
-const connect = mongoose.connect(url);
+const url = config.mongoUrl;
+const connect = mongoose.connect(url,{ useNewUrlParser: true,useUnifiedTopology: true,'useCreateIndex': true });
+
 
 connect.then((db)=>{
   console.log('Connected Correctly to server');
